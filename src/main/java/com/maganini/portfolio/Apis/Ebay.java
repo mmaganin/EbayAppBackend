@@ -27,7 +27,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 @Data
 public class Ebay {
     private static String accessToken = "";
-    private static String refreshToken = "";
     public static final ArrayList<EbayItemSummary> checkedListings = new ArrayList<>();
 
     //fields for mapping JSON response to POJO
@@ -70,7 +69,6 @@ public class Ebay {
         OAuth2Api oauth2Api = new OAuth2Api();
         CredentialUtil.load(new FileInputStream(credsPath));
         OAuthResponse oAuthResponse = oauth2Api.getApplicationToken(Environment.PRODUCTION, List.of("https://api.ebay.com/oauth/api_scope"));
-        refreshToken = oAuthResponse.getRefreshToken().orElse(new RefreshToken()).getToken();
         accessToken = oAuthResponse.getAccessToken().orElse(new AccessToken()).getToken();
     }
 
@@ -100,19 +98,28 @@ public class Ebay {
             }
         }
         //checks if there are any new listings and adds to list
+        boolean isActuallyNewItems = true;
+        if(checkedListings.isEmpty()){
+            isActuallyNewItems = false;
+        }
         ArrayList<EbayItemSummary> newItems = new ArrayList<>();
         for (EbayItemSummary ebayItem : ebayObj.itemSummaries) {
-            if (!isListingChecked(ebayItem)) {
+//            if (!isListingChecked(ebayItem)) {
+            if (!checkedListings.contains(ebayItem)) {
                 newItems.add(ebayItem);
                 Ebay.checkedListings.add(ebayItem);
-                System.out.println();
-                System.out.println("!!!NEW ITEM BELOW!!!");
-                System.out.println("Title: " + ebayItem.title + ", Price: " + ebayItem.price + ", Condition: " + ebayItem.condition + ", Listing Creation Date: " + ebayItem.itemCreationDate + ", URL: " + ebayItem.itemWebUrl);
+                if(isActuallyNewItems){
+                    System.out.println();
+                    System.out.println("!!!NEW ITEM BELOW!!!");
+                    System.out.println("Title: " + ebayItem.title + ", Price: " + ebayItem.price + ", Condition: " + ebayItem.condition + ", Listing Creation Date: " + ebayItem.itemCreationDate + ", URL: " + ebayItem.itemWebUrl);
+                } else {
+                    System.out.println("Item being reloaded into memory...");
+                }
             }
         }
 
         //SENDS EMAIL: if new items list is not empty
-        if (!newItems.isEmpty()) {
+        if (!newItems.isEmpty() && isActuallyNewItems) {
             String body = "";
             for (EbayItemSummary ebayItem : newItems) {
                 body += "Title: " + ebayItem.title +
@@ -125,26 +132,6 @@ public class Ebay {
         }
 
         return ApiUtil.mapStrResponseToMap(ebayResponse);
-    }
-
-    public static boolean isListingChecked(EbayItemSummary ebayItemToCheck) {
-        for (EbayItemSummary ebayItem : Ebay.checkedListings) {
-            if (isStringsEqual(ebayItemToCheck.epid, ebayItem.epid)) {
-                if (isStringsEqual(ebayItemToCheck.itemId, ebayItem.itemId)) {
-                    if (isStringsEqual(ebayItemToCheck.legacyItemId, ebayItem.legacyItemId)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public static boolean isStringsEqual(String str1, String str2) {
-        return (str1 == null && str2 == null)
-                || ((str1 != null && str2 != null)
-                && str1.equals(str2));
     }
 
     public static Map<String, Object> initEbay(EbayReqBody ebayReqBody) throws IOException, InterruptedException {
@@ -177,14 +164,29 @@ public class Ebay {
         System.out.println("Mail Sent Successfully");
     }
 
+    //    public static boolean isListingChecked(EbayItemSummary ebayItemToCheck) {
+//        for (EbayItemSummary ebayItem : Ebay.checkedListings) {
+//            if (isStringsEqual(ebayItemToCheck.epid, ebayItem.epid)) {
+//                if (isStringsEqual(ebayItemToCheck.itemId, ebayItem.itemId)) {
+//                    if (isStringsEqual(ebayItemToCheck.legacyItemId, ebayItem.legacyItemId)) {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//
+//        return false;
+//    }
+//
+//    public static boolean isStringsEqual(String str1, String str2) {
+//        return (str1 == null && str2 == null)
+//                || ((str1 != null && str2 != null)
+//                && str1.equals(str2));
+//    }
+
     public static void setAccessToken(String accessToken) {
         Ebay.accessToken = accessToken;
     }
-
-    public static void setRefreshToken(String refreshToken) {
-        Ebay.refreshToken = refreshToken;
-    }
-
 }
 
 class Refinement {

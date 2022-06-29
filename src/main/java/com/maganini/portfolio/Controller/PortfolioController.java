@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class PortfolioController {
-    //    @Autowired
     private final JavaMailSender javaMailSender;
 
     @GetMapping("/portfolio")
@@ -48,18 +47,26 @@ public class PortfolioController {
     @PostMapping("/ebay")
     public void searchEbay(@RequestBody EbayReqBody ebayReqBody) throws IOException, InterruptedException {
 //        EbayReqBody ebayReqBody = new EbayReqBody("rtx 3090", "300", "1000", "50", "NEW", "newlyListed");
+        String emailBody = "defaultBody";
 
-        int i = 1;
-        System.out.println(Ebay.initEbay(ebayReqBody));
-        System.out.println();
-        System.out.println("END OF INIT API CALL");
-        System.out.println();
-        while (true) {
-            TimeUnit.SECONDS.sleep(25);
-            System.out.println(Ebay.getEbay(ebayReqBody, javaMailSender));
-            System.out.println("END OF API CALL #" + i);
+        try {
+            int i = 1;
+            System.out.println(Ebay.initEbay(ebayReqBody));
             System.out.println();
-            i++;
+            System.out.println("END OF INIT API CALL");
+            System.out.println();
+            while (true) {
+                TimeUnit.SECONDS.sleep(25);
+                System.out.println(Ebay.getEbay(ebayReqBody, javaMailSender));
+                System.out.println("END OF API CALL #" + i);
+                System.out.println();
+                i++;
+            }
+        } catch (Exception e){
+            emailBody = e.getMessage();
         }
+
+        System.out.println("EXECUTION FINISHED");
+        Ebay.sendEmail(javaMailSender, "michaelmags33@gmail.com", "Ebay Execution stopped", "\"" + ebayReqBody.credsPath + "\" path stopped: " + emailBody);
     }
 }
