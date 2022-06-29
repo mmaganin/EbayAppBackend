@@ -1,6 +1,5 @@
 package com.maganini.portfolio.Apis;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.maganini.portfolio.Apis.ApiUtilClasses.ApiUtil;
 import com.maganini.portfolio.Apis.ApiUtilClasses.Creds;
 import com.maganini.portfolio.Apis.ApiUtilClasses.CryptoData;

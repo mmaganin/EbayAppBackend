@@ -6,12 +6,8 @@ import com.ebay.api.client.auth.oauth2.model.AccessToken;
 import com.ebay.api.client.auth.oauth2.model.Environment;
 import com.ebay.api.client.auth.oauth2.model.OAuthResponse;
 import com.ebay.api.client.auth.oauth2.model.RefreshToken;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.maganini.portfolio.Apis.ApiUtilClasses.*;
 import lombok.Data;
-import lombok.ToString;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,10 +20,9 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 @Data
 public class Ebay {
@@ -47,12 +42,12 @@ public class Ebay {
     public String total;
     public ArrayList<Warning> warnings;
 
-    //can make 1.4 calls every 25 seconds to browse api if running 24 hours/day (5000 calls/day for browse api)
+    //can make 1.15 calls every 20 seconds to browse api if running 24 hours/day (5000 calls/day for browse api)
     //sort options: distance, -price, newlyListed, endingSoonest
     //condition options: NEW, USED, UNSPECIFIED
-    public static String browseEbayListings(EbayReqBody ebayReqBody) throws IOException, InterruptedException {
+    public static String browseEbayListings(EbayReqBody ebayReqBody, String credsPath) throws IOException, InterruptedException {
         if (accessToken.equals("")) {
-            getAuthToken();
+            getAuthToken(credsPath);
         }
 
         String uri = "https://api.ebay.com/buy/browse/v1/item_summary/search?" +
@@ -63,7 +58,6 @@ public class Ebay {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(uri))
-//                .header("Content-Type", "application/x-www-form-urlencoded")
                 .header("Authorization", "Bearer " + accessToken)
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build();
@@ -72,19 +66,16 @@ public class Ebay {
         return response.body();
     }
 
-    public static void getAuthToken() throws IOException {
+    public static void getAuthToken(String credsPath) throws IOException {
         OAuth2Api oauth2Api = new OAuth2Api();
-        CredentialUtil.load(new FileInputStream("../ebay-config.yaml"));
-//        System.out.println(CredentialUtil.getCredentials(Environment.PRODUCTION).toString());
+        CredentialUtil.load(new FileInputStream(credsPath));
         OAuthResponse oAuthResponse = oauth2Api.getApplicationToken(Environment.PRODUCTION, List.of("https://api.ebay.com/oauth/api_scope"));
         refreshToken = oAuthResponse.getRefreshToken().orElse(new RefreshToken()).getToken();
         accessToken = oAuthResponse.getAccessToken().orElse(new AccessToken()).getToken();
-//        System.out.println("refresh token: " + refreshToken);
-//        System.out.println("access token: " + accessToken);
     }
 
     public static Map<String, Object> getEbay(EbayReqBody ebayReqBody, JavaMailSender javaMailSender) throws IOException, InterruptedException {
-        String ebayResponse = Ebay.browseEbayListings(ebayReqBody);
+        String ebayResponse = Ebay.browseEbayListings(ebayReqBody, ebayReqBody.credsPath);
         //Checks if valid access token
         Ebay ebayObj = null;
         try {
@@ -96,8 +87,8 @@ public class Ebay {
         }
 
         //checks if valid response is being received after access token validated
-        if(ebayObj == null){
-            ebayResponse = Ebay.browseEbayListings(ebayReqBody);
+        if (ebayObj == null) {
+            ebayResponse = Ebay.browseEbayListings(ebayReqBody, ebayReqBody.credsPath);
             try {
                 ebayObj = (Ebay) ApiUtil.mapStrResponseToObj(ebayResponse, Ebay.class);
             } catch (Exception e) {
@@ -110,8 +101,8 @@ public class Ebay {
         }
         //checks if there are any new listings and adds to list
         ArrayList<EbayItemSummary> newItems = new ArrayList<>();
-        for(EbayItemSummary ebayItem : ebayObj.itemSummaries){
-            if(!Ebay.checkedListings.contains(ebayItem)){
+        for (EbayItemSummary ebayItem : ebayObj.itemSummaries) {
+            if (!isListingChecked(ebayItem)) {
                 newItems.add(ebayItem);
                 Ebay.checkedListings.add(ebayItem);
                 System.out.println();
@@ -121,9 +112,9 @@ public class Ebay {
         }
 
         //SENDS EMAIL: if new items list is not empty
-        if(!newItems.isEmpty()){
+        if (!newItems.isEmpty()) {
             String body = "";
-            for(EbayItemSummary ebayItem : newItems){
+            for (EbayItemSummary ebayItem : newItems) {
                 body += "Title: " + ebayItem.title +
                         ", \nCondition: " + ebayItem.condition +
                         ", \nListing Creation Date: " + ebayItem.itemCreationDate +
@@ -136,8 +127,28 @@ public class Ebay {
         return ApiUtil.mapStrResponseToMap(ebayResponse);
     }
 
+    public static boolean isListingChecked(EbayItemSummary ebayItemToCheck) {
+        for (EbayItemSummary ebayItem : Ebay.checkedListings) {
+            if (isStringsEqual(ebayItemToCheck.epid, ebayItem.epid)) {
+                if (isStringsEqual(ebayItemToCheck.itemId, ebayItem.itemId)) {
+                    if (isStringsEqual(ebayItemToCheck.legacyItemId, ebayItem.legacyItemId)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean isStringsEqual(String str1, String str2) {
+        return (str1 == null && str2 == null)
+                || ((str1 != null && str2 != null)
+                && str1.equals(str2));
+    }
+
     public static Map<String, Object> initEbay(EbayReqBody ebayReqBody) throws IOException, InterruptedException {
-        String ebayResponse = Ebay.browseEbayListings(ebayReqBody);
+        String ebayResponse = Ebay.browseEbayListings(ebayReqBody, ebayReqBody.credsPath);
 
         Ebay ebayObj;
         try {
@@ -148,7 +159,7 @@ public class Ebay {
             return ApiUtil.mapStrResponseToMap(ebayResponse);
         }
 
-        for(EbayItemSummary ebayItem : ebayObj.itemSummaries){
+        for (EbayItemSummary ebayItem : ebayObj.itemSummaries) {
             Ebay.checkedListings.add(ebayItem);
             System.out.println("Title: " + ebayItem.title + ", Price: " + ebayItem.price + ", Condition: " + ebayItem.condition + ", Listing Creation Date: " + ebayItem.itemCreationDate + ", URL: " + ebayItem.itemWebUrl);
         }
@@ -174,27 +185,9 @@ public class Ebay {
         Ebay.refreshToken = refreshToken;
     }
 
-//    public static void main(String[] args) throws IOException, InterruptedException {
-//        JavaMailSender javaMailSender = new JavaMailSenderImpl();
-////        sendEmail(javaMailSender, "michaelmags33@gmail.com", "test email subject","test email body");
-//
-//        EbayReqBody ebayReqBody = new EbayReqBody("rtx 3090", "300", "1000", "50", "NEW", "newlyListed");
-//
-//        System.out.println(initEbay(ebayReqBody));
-//        System.out.println();
-//        System.out.println("END OF INIT API CALL");
-//        System.out.println();
-//        while(true){
-//            TimeUnit.SECONDS.sleep(25);
-//            System.out.println(getEbay(ebayReqBody, javaMailSender));
-//            System.out.println();
-//            System.out.println("END OF API CALL");
-//            System.out.println();
-//        }
-//    }
 }
 
-class Refinement{
+class Refinement {
     public ArrayList<AspectDistribution> aspectDistributions;
     public ArrayList<BuyingOptionDistribution> buyingOptionDistributions;
     public ArrayList<CategoryDistribution> categoryDistributions;
@@ -202,7 +195,7 @@ class Refinement{
     public String dominantCategoryId;
 }
 
-class Warning{
+class Warning {
     public String category;
     public String domain;
     public String errorId;
@@ -214,41 +207,41 @@ class Warning{
     public String subdomain;
 }
 
-class Parameter{
+class Parameter {
     public String name;
     public String value;
 }
 
-class ConditionDistribution{
+class ConditionDistribution {
     public String condition;
     public String conditionId;
     public String matchCount;
     public String refinementHref;
 }
 
-class CategoryDistribution{
+class CategoryDistribution {
     public String categoryId;
     public String categoryName;
     public String matchCount;
     public String refinementHref;
 }
 
-class BuyingOptionDistribution{
+class BuyingOptionDistribution {
     public String buyingOption;
     public String matchCount;
     public String refinementHref;
 }
 
-class AutoCorrections{
+class AutoCorrections {
     public String q;
 }
 
-class AspectDistribution{
+class AspectDistribution {
     public ArrayList<AspectValueDistribution> aspectValueDistributions;
     public String localizedAspectName;
 }
 
-class AspectValueDistribution{
+class AspectValueDistribution {
     public String localizedAspectValue;
     public String matchCount;
     public String refinementHref;

@@ -12,4 +12,5 @@ public class EbayReqBody {
     public String numberOfResults;
     public String condition;
     public String sortType;
+    public String credsPath;
 }
