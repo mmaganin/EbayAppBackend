@@ -69,7 +69,6 @@ public class PortfolioController {
         while(true){
             TimeUnit.SECONDS.sleep(25);
             System.out.println(Ebay.getEbay(ebayReqBody, javaMailSender));
-            System.out.println();
             System.out.println("END OF API CALL");
             System.out.println();
         }
