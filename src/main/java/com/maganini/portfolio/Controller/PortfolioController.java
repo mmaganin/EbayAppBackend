@@ -62,6 +62,7 @@ public class PortfolioController {
 
 //        EbayReqBody ebayReqBody = new EbayReqBody("rtx 3090", "300", "1000", "50", "NEW", "newlyListed");
 
+        int i = 1;
         System.out.println(Ebay.initEbay(ebayReqBody));
         System.out.println();
         System.out.println("END OF INIT API CALL");
@@ -69,8 +70,9 @@ public class PortfolioController {
         while(true){
             TimeUnit.SECONDS.sleep(25);
             System.out.println(Ebay.getEbay(ebayReqBody, javaMailSender));
-            System.out.println("END OF API CALL");
+            System.out.println("END OF API CALL #" + i);
             System.out.println();
+            i++;
         }
 
 
