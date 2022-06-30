@@ -70,3 +70,4 @@ public class PortfolioController {
         Ebay.sendEmail(javaMailSender, "michaelmags33@gmail.com", "Ebay Execution stopped", "\"" + ebayReqBody.credsPath + "\" path stopped: " + emailBody);
     }
 }
+

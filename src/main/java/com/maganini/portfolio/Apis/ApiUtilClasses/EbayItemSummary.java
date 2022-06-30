@@ -2,7 +2,9 @@ package com.maganini.portfolio.Apis.ApiUtilClasses;
 
 import lombok.Data;
 
+import java.sql.Date;
 import java.util.ArrayList;
+
 @Data
 public class EbayItemSummary {
     public ArrayList<AdditionalImage> additionalImages;
@@ -21,8 +23,8 @@ public class EbayItemSummary {
     public String epid;
     public Image image;
     public String itemAffiliateWebUrl;
-    public String itemCreationDate;
-    public String itemEndDate;
+    public Date itemCreationDate;
+    public Date itemEndDate;
     public String itemGroupHref;
     public String itemGroupType;
     public String itemHref;
@@ -33,7 +35,7 @@ public class EbayItemSummary {
     public String listingMarketplaceId;
     public MarketingPrice marketingPrice;
     public ArrayList<PickupOption> pickupOptions;
-    public Price price;
+    public EbayPrice price;
     public String priceDisplayCondition;
     public String priorityListing;
     public ArrayList<String> qualifiedPrograms;
@@ -117,13 +119,7 @@ class OriginalPrice{
 class PickupOption{
     public String pickupLocationType;
 }
-@Data
-class Price{
-    public String convertedFromCurrency;
-    public String convertedFromValue;
-    public String currency;
-    public String value;
-}
+
 @Data
 class Seller{
     public String feedbackPercentage;

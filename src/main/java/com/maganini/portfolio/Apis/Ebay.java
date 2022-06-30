@@ -17,6 +17,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.Charset;
+import java.time.Instant;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -48,12 +51,12 @@ public class Ebay {
         if (accessToken.equals("")) {
             getAuthToken(credsPath);
         }
-
         String uri = "https://api.ebay.com/buy/browse/v1/item_summary/search?" +
                 "q=" + URLEncoder.encode(ebayReqBody.keyword, Charset.defaultCharset()) +
                 "&limit=" + ebayReqBody.numberOfResults +
                 "&sort=" + ebayReqBody.sortType +
-                "&filter=" + URLEncoder.encode("price:[" + ebayReqBody.lowPrice + ".." + ebayReqBody.highPrice + "],priceCurrency:USD,conditions:{" + ebayReqBody.condition + "}", Charset.defaultCharset());
+                "&filter=" + URLEncoder.encode("deliveryCountry:US,buyingOptions:{FIXED_PRICE|BEST_OFFER},conditions:{" + ebayReqBody.condition + "}", Charset.defaultCharset());
+//                "&filter=" + URLEncoder.encode("price:[" + ebayReqBody.lowPrice + ".." + ebayReqBody.highPrice + "],priceCurrency:USD,deliveryCountry:US,conditions:{" + ebayReqBody.condition + "}", Charset.defaultCharset());
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(uri))
@@ -74,52 +77,35 @@ public class Ebay {
 
     public static Map<String, Object> getEbay(EbayReqBody ebayReqBody, JavaMailSender javaMailSender) throws IOException, InterruptedException {
         String ebayResponse = Ebay.browseEbayListings(ebayReqBody, ebayReqBody.credsPath);
-        //Checks if valid access token
-        Ebay ebayObj = null;
-        try {
-            ebayObj = (Ebay) ApiUtil.mapStrResponseToObj(ebayResponse, Ebay.class);
-        } catch (Exception e) {
-            Ebay.setAccessToken("");
-            System.out.println("bad access token?");
-            e.printStackTrace();
+
+        Ebay ebayObj = validateApiCall(ebayResponse, javaMailSender, ebayReqBody);
+        if (ebayObj == null) {
+            return ApiUtil.mapStrResponseToMap(ebayResponse);
         }
 
-        //checks if valid response is being received after access token validated
-        if (ebayObj == null) {
-            ebayResponse = Ebay.browseEbayListings(ebayReqBody, ebayReqBody.credsPath);
-            try {
-                ebayObj = (Ebay) ApiUtil.mapStrResponseToObj(ebayResponse, Ebay.class);
-            } catch (Exception e) {
-                //SENDs EMAIL: if something is wrong with JSON to POJO mapping or API call
-                sendEmail(javaMailSender, "michaelmags33@gmail.com", "!!EBAY!! JSON to POJO failure OR API call failure", e.getMessage());
-                System.out.println("JSON to POJO failure OR API call failure");
-                e.printStackTrace();
-                return ApiUtil.mapStrResponseToMap(ebayResponse);
-            }
-        }
-        //checks if there are any new listings and adds to list
-        boolean isActuallyNewItems = true;
-        if(checkedListings.isEmpty()){
-            isActuallyNewItems = false;
-        }
+        //checks if there are any new listings and adds to list, these are emailed
         ArrayList<EbayItemSummary> newItems = new ArrayList<>();
         for (EbayItemSummary ebayItem : ebayObj.itemSummaries) {
-//            if (!isListingChecked(ebayItem)) {
-            if (!checkedListings.contains(ebayItem)) {
-                newItems.add(ebayItem);
+            if (!isListingChecked(ebayItem)) {
+                double lowPrice = Double.parseDouble(ebayReqBody.lowPrice);
+                double highPrice = Double.parseDouble(ebayReqBody.highPrice);
+                //handles if Price field is null, adds to newItems if so
+                double itemValue = ebayItem.price == null || ebayItem.price.value == null || ebayItem.price.value.equals("")
+                        ? lowPrice : Double.parseDouble(ebayItem.price.value);
+
+                //adds to new items to email if: listing occurred today + if in provided price range
+                if ((ebayItem.itemCreationDate == null || ebayItem.itemCreationDate.toString().equals(Date.valueOf(LocalDate.now()).toString()))
+                        && (itemValue >= lowPrice && itemValue <= highPrice)) newItems.add(ebayItem);
+
                 Ebay.checkedListings.add(ebayItem);
-                if(isActuallyNewItems){
-                    System.out.println();
-                    System.out.println("!!!NEW ITEM BELOW!!!");
-                    System.out.println("Title: " + ebayItem.title + ", Price: " + ebayItem.price + ", Condition: " + ebayItem.condition + ", Listing Creation Date: " + ebayItem.itemCreationDate + ", URL: " + ebayItem.itemWebUrl);
-                } else {
-                    System.out.println("Item being reloaded into memory...");
-                }
+                System.out.println();
+                System.out.println("!!!ITEM NOT YET CHECKED BELOW!!!");
+                System.out.println("Title: " + ebayItem.title + ", Price: " + ebayItem.price + ", Condition: " + ebayItem.condition + ", Listing Creation Date: " + ebayItem.itemCreationDate + ", URL: " + ebayItem.itemWebUrl);
             }
         }
 
         //SENDS EMAIL: if new items list is not empty
-        if (!newItems.isEmpty() && isActuallyNewItems) {
+        if (!newItems.isEmpty()) {
             String body = "";
             for (EbayItemSummary ebayItem : newItems) {
                 body += "Title: " + ebayItem.title +
@@ -164,25 +150,55 @@ public class Ebay {
         System.out.println("Mail Sent Successfully");
     }
 
-    //    public static boolean isListingChecked(EbayItemSummary ebayItemToCheck) {
-//        for (EbayItemSummary ebayItem : Ebay.checkedListings) {
-//            if (isStringsEqual(ebayItemToCheck.epid, ebayItem.epid)) {
-//                if (isStringsEqual(ebayItemToCheck.itemId, ebayItem.itemId)) {
-//                    if (isStringsEqual(ebayItemToCheck.legacyItemId, ebayItem.legacyItemId)) {
-//                        return true;
-//                    }
-//                }
-//            }
-//        }
-//
-//        return false;
-//    }
-//
-//    public static boolean isStringsEqual(String str1, String str2) {
-//        return (str1 == null && str2 == null)
-//                || ((str1 != null && str2 != null)
-//                && str1.equals(str2));
-//    }
+    public static Ebay validateApiCall(String ebayResponse, JavaMailSender javaMailSender, EbayReqBody ebayReqBody) throws IOException, InterruptedException {
+        //Checks if valid access token
+        Ebay ebayObj = null;
+        try {
+            ebayObj = (Ebay) ApiUtil.mapStrResponseToObj(ebayResponse, Ebay.class);
+        } catch (Exception e) {
+            Ebay.setAccessToken("");
+            System.out.println("bad access token?");
+            e.printStackTrace();
+        }
+
+        //checks if valid response is being received after access token validated
+        if (ebayObj == null) {
+            ebayResponse = Ebay.browseEbayListings(ebayReqBody, ebayReqBody.credsPath);
+            try {
+                ebayObj = (Ebay) ApiUtil.mapStrResponseToObj(ebayResponse, Ebay.class);
+            } catch (Exception e) {
+                //SENDs EMAIL: if something is wrong with JSON to POJO mapping or API call
+                sendEmail(javaMailSender, "michaelmags33@gmail.com", "!!EBAY!! JSON to POJO failure OR API call failure", e.getMessage());
+                System.out.println("JSON to POJO failure OR API call failure");
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        return ebayObj;
+    }
+
+    public static boolean isListingChecked(EbayItemSummary ebayItemToCheck) {
+        for (EbayItemSummary ebayItem : Ebay.checkedListings) {
+            if (isStringsEqual(ebayItemToCheck.epid, ebayItem.epid)
+                    && isStringsEqual(ebayItemToCheck.itemId, ebayItem.itemId)
+                    && isStringsEqual(ebayItemToCheck.legacyItemId, ebayItem.legacyItemId)
+                    && isStringsEqual(ebayItemToCheck.title, ebayItem.title)
+                    && isStringsEqual(ebayItemToCheck.condition, ebayItem.condition)
+                    && isStringsEqual(ebayItemToCheck.itemWebUrl, ebayItem.itemWebUrl)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean isStringsEqual(String str1, String str2) {
+        return (str1 == null && str2 == null)
+                || ((str1 != null && str2 != null)
+                && str1.equals(str2));
+    }
 
     public static void setAccessToken(String accessToken) {
         Ebay.accessToken = accessToken;
