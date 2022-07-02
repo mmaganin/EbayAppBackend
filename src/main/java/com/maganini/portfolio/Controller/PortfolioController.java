@@ -44,30 +44,25 @@ public class PortfolioController {
         return ResponseEntity.ok().body(Markets.getMarkets(marketAbbr));
     }
 
-    @PostMapping("/ebay")
-    public void searchEbay(@RequestBody EbayReqBody ebayReqBody) throws IOException, InterruptedException {
+    @PostMapping("/ebaySlow1")
+    public void searchEbaySingle1(@RequestBody EbayReqBody ebayReqBody) {
 //        EbayReqBody ebayReqBody = new EbayReqBody("rtx 3090", "300", "1000", "50", "NEW", "newlyListed");
-        String emailBody = "defaultBody";
+        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Single 1 " + ebayReqBody.keyword, 50,1);
+    }
 
-        try {
-            int i = 1;
-            System.out.println(Ebay.initEbay(ebayReqBody));
-            System.out.println();
-            System.out.println("END OF INIT API CALL");
-            System.out.println();
-            while (true) {
-                TimeUnit.SECONDS.sleep(25);
-                System.out.println(Ebay.getEbay(ebayReqBody, javaMailSender));
-                System.out.println("END OF API CALL #" + i);
-                System.out.println();
-                i++;
-            }
-        } catch (Exception e){
-            emailBody = e.getMessage();
-        }
+    @PostMapping("/ebaySlow2")
+    public void searchEbaySingle2(@RequestBody EbayReqBody ebayReqBody) {
+        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Single 2 " + ebayReqBody.keyword, 50,2);
+    }
 
-        System.out.println("EXECUTION FINISHED");
-        Ebay.sendEmail(javaMailSender, "michaelmags33@gmail.com", "Ebay Execution stopped", "\"" + ebayReqBody.credsPath + "\" path stopped: " + emailBody);
+    @PostMapping("/ebayFast1")
+    public void searchEbayDouble1(@RequestBody EbayReqBody ebayReqBody) {
+        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Double 1 " + ebayReqBody.keyword, 25,1);
+    }
+
+    @PostMapping("/ebayFast2")
+    public void searchEbayDouble2(@RequestBody EbayReqBody ebayReqBody) {
+        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Double 2 " + ebayReqBody.keyword, 25,2);
     }
 }
 
