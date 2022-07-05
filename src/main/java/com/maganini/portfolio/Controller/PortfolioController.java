@@ -14,10 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 
 @RestController
-@RequestMapping("/api")
-@RequiredArgsConstructor
+@RequestMapping("/api/portfolio")
 public class PortfolioController {
-    private final JavaMailSender javaMailSender;
 
     @GetMapping("/portfolio")
     public ResponseEntity<PortfolioInfo> getMyInfo() {
@@ -44,25 +42,5 @@ public class PortfolioController {
         return ResponseEntity.ok().body(Markets.getMarkets(marketAbbr));
     }
 
-    @PostMapping("/ebaySlow1")
-    public void searchEbaySingle1(@RequestBody EbayReqBody ebayReqBody) {
-//        EbayReqBody ebayReqBody = new EbayReqBody("rtx 3090", "300", "1000", "50", "NEW", "newlyListed");
-        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Single 1 " + ebayReqBody.keyword, 50,1);
-    }
-
-    @PostMapping("/ebaySlow2")
-    public void searchEbaySingle2(@RequestBody EbayReqBody ebayReqBody) {
-        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Single 2 " + ebayReqBody.keyword, 50,2);
-    }
-
-    @PostMapping("/ebayFast1")
-    public void searchEbayDouble1(@RequestBody EbayReqBody ebayReqBody) {
-        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Double 1 " + ebayReqBody.keyword, 25,1);
-    }
-
-    @PostMapping("/ebayFast2")
-    public void searchEbayDouble2(@RequestBody EbayReqBody ebayReqBody) {
-        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Double 2 " + ebayReqBody.keyword, 25,2);
-    }
 }
 
