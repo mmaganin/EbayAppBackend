@@ -5,12 +5,10 @@ import com.maganini.portfolio.Apis.ApiUtilClasses.EbayReqBody;
 import com.maganini.portfolio.Apis.Ebay;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
+@RestController
 @RequestMapping("/api/ebay")
 public class EbayController {
     private final JavaMailSender javaMailSender;
@@ -41,7 +39,7 @@ public class EbayController {
 //        EbayReqBody ebayReqBody = new EbayReqBody("rtx 3090", "300", "1000", "50", "NEW", "newlyListed");
         if(EbayCreds.isRunningSlow1) return;
         EbayCreds.isRunningSlow1 = true;
-        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Single 1 " + ebayReqBody.keyword, 50, 1);
+        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Slow 1 " + ebayReqBody.keyword, 50, 1);
         EbayCreds.isRunningSlow1 = false;
     }
 
@@ -49,7 +47,7 @@ public class EbayController {
     public void searchEbaySlow2(@RequestBody EbayReqBody ebayReqBody) {
         if(EbayCreds.isRunningSlow2) return;
         EbayCreds.isRunningSlow2 = true;
-        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Single 2 " + ebayReqBody.keyword, 50, 2);
+        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Slow 2 " + ebayReqBody.keyword, 50, 2);
         EbayCreds.isRunningSlow2 = false;
     }
 
@@ -57,7 +55,7 @@ public class EbayController {
     public void searchEbayFast1(@RequestBody EbayReqBody ebayReqBody) {
         if(EbayCreds.isRunningFast1) return;
         EbayCreds.isRunningFast1 = true;
-        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Double 1 " + ebayReqBody.keyword, 25, 1);
+        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Fast 1 " + ebayReqBody.keyword, 25, 1);
         EbayCreds.isRunningFast1 = false;
     }
 
@@ -65,7 +63,7 @@ public class EbayController {
     public void searchEbayFast2(@RequestBody EbayReqBody ebayReqBody) {
         if(EbayCreds.isRunningFast2) return;
         EbayCreds.isRunningFast2 = true;
-        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Double 2 " + ebayReqBody.keyword, 25, 2);
+        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Fast 2 " + ebayReqBody.keyword, 25, 2);
         EbayCreds.isRunningFast2 = false;
     }
 }
