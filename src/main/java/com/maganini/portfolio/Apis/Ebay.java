@@ -78,9 +78,9 @@ public class Ebay {
         CredentialUtil.load(new FileInputStream(credsPath));
         OAuthResponse oAuthResponse = oauth2Api.getApplicationToken(Environment.PRODUCTION, List.of("https://api.ebay.com/oauth/api_scope"));
 
-        if(option == 1){
+        if (option == 1) {
             EbayCreds.accessToken1 = oAuthResponse.getAccessToken().orElse(new AccessToken()).getToken();
-        } else if(option == 2){
+        } else if (option == 2) {
             EbayCreds.accessToken2 = oAuthResponse.getAccessToken().orElse(new AccessToken()).getToken();
         }
     }
@@ -123,7 +123,9 @@ public class Ebay {
                 body += "Title: " + ebayItem.title +
                         ", \nCondition: " + ebayItem.condition +
                         ", \nListing Creation Date: " + ebayItem.itemCreationDate +
-                        ", \nPrice: " + ebayItem.price +
+                        ", \nPrice: " + (ebayItem.price != null
+                        ? ("$" + ebayItem.price.value)
+                        : "BEST OFFER ITEM") +
                         "\n" + ebayItem.itemWebUrl + "\n\n";
             }
             sendEmail(javaMailSender, "michaelmags33@gmail.com", "!!EBAY!! New Potential Buy(s)", body);
@@ -216,7 +218,7 @@ public class Ebay {
                 && str1.equals(str2));
     }
 
-    public static void ebayUtil(EbayReqBody ebayReqBody, JavaMailSender javaMailSender, String logMessage, int secsBetweenCalls, int option){
+    public static void ebayUtil(EbayReqBody ebayReqBody, JavaMailSender javaMailSender, String logMessage, int secsBetweenCalls, int option) {
         String emailBody = "defaultBody";
         String initCallName = "END OF INIT API CALL FOR " + logMessage;
         String callName = "END OF API CALL FOR " + logMessage + " #";
@@ -229,12 +231,13 @@ public class Ebay {
             System.out.println();
             while (true) {
                 TimeUnit.SECONDS.sleep(secsBetweenCalls);
-                System.out.println(Ebay.getEbay(ebayReqBody, javaMailSender, option));
+//                System.out.println(Ebay.getEbay(ebayReqBody, javaMailSender, option));
+                Ebay.getEbay(ebayReqBody, javaMailSender, option);
                 System.out.println(callName + i);
                 System.out.println();
                 i++;
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             emailBody = e.getMessage();
         }
 
@@ -242,16 +245,16 @@ public class Ebay {
         Ebay.sendEmail(javaMailSender, "michaelmags33@gmail.com", "Ebay Execution stopped", "\"" + ebayReqBody.credsPath + "\" path stopped: " + emailBody);
     }
 
-    public static ArrayList<EbayItemSummary> getCheckedListings(int option){
-        if(option == 1){
+    public static ArrayList<EbayItemSummary> getCheckedListings(int option) {
+        if (option == 1) {
             return EbayCreds.checkedListings1;
         } else {
             return EbayCreds.checkedListings2;
         }
     }
 
-    public static String getAccessToken(int option){
-        if(option == 1){
+    public static String getAccessToken(int option) {
+        if (option == 1) {
             return EbayCreds.accessToken1;
         } else {
             return EbayCreds.accessToken2;
@@ -259,7 +262,7 @@ public class Ebay {
     }
 
     public static void setAccessToken(String accessToken, int option) {
-        if(option == 1){
+        if (option == 1) {
             EbayCreds.accessToken1 = accessToken;
         } else {
             EbayCreds.accessToken2 = accessToken;
