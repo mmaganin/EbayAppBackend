@@ -6,12 +6,15 @@ import java.util.ArrayList;
 
 public class EbayCreds {
     public static String accessToken1 = "";
-    public static final ArrayList<EbayItemSummary> checkedListings1 = new ArrayList<>();
-    public static boolean isRunningFast1 = false;
-    public static boolean isRunningSlow1 = false;
+    public static final ArrayList<EbayItemSummary> checkedListingsFast1 = new ArrayList<>();
+    public static final ArrayList<EbayItemSummary> checkedListingsSlow1 = new ArrayList<>();
 
-    public static String accessToken2 = "";
-    public static final ArrayList<EbayItemSummary> checkedListings2 = new ArrayList<>();
-    public static boolean isRunningFast2 = false;
-    public static boolean isRunningSlow2 = false;
+    public static boolean canRunFast1 = true;
+    public static boolean canRunSlow1 = true;
+
+//    public static String accessToken2 = "";
+    public static final ArrayList<EbayItemSummary> checkedListingsFast2 = new ArrayList<>();
+    public static final ArrayList<EbayItemSummary> checkedListingsSlow2 = new ArrayList<>();
+    public static boolean canRunFast2 = true;
+    public static boolean canRunSlow2 = true;
 }

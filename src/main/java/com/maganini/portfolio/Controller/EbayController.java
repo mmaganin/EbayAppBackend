@@ -2,6 +2,7 @@ package com.maganini.portfolio.Controller;
 
 import com.maganini.portfolio.Apis.ApiUtilClasses.EbayCreds;
 import com.maganini.portfolio.Apis.ApiUtilClasses.EbayReqBody;
+import com.maganini.portfolio.Apis.ApiUtilClasses.EbayStatus;
 import com.maganini.portfolio.Apis.Ebay;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,57 +14,56 @@ import org.springframework.web.bind.annotation.*;
 public class EbayController {
     private final JavaMailSender javaMailSender;
 
-    @GetMapping("/slow1")
-    public boolean isRunningSlow1() {
-        return EbayCreds.isRunningSlow1;
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/status")
+    public EbayStatus isRunningSlow1() {
+        return EbayStatus.getEbayStatus();
     }
 
-    @GetMapping("/slow2")
-    public boolean isRunningSlow2() {
-        return EbayCreds.isRunningSlow2;
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PutMapping("/slow1")
+    public EbayStatus stopSlow1() {
+        EbayCreds.canRunSlow1 = true;
+        return EbayStatus.getEbayStatus();
+    }
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PutMapping("/slow2")
+    public EbayStatus stopSlow2() {
+        EbayCreds.canRunSlow2 = true;
+        return EbayStatus.getEbayStatus();
+    }
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PutMapping("/fast1")
+    public EbayStatus stopFast1() {
+        EbayCreds.canRunFast1 = true;
+        return EbayStatus.getEbayStatus();
+    }
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PutMapping("/fast2")
+    public EbayStatus stopFast2() {
+        EbayCreds.canRunFast2 = true;
+        return EbayStatus.getEbayStatus();
     }
 
-    @GetMapping("/fast1")
-    public boolean isRunningFast1() {
-        return EbayCreds.isRunningFast1;
-    }
-
-    @GetMapping("/fast2")
-    public boolean isRunningFast2() {
-        return EbayCreds.isRunningFast2;
-    }
-
-
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/slow1")
-    public void searchEbaySlow1(@RequestBody EbayReqBody ebayReqBody) {
-//        EbayReqBody ebayReqBody = new EbayReqBody("rtx 3090", "300", "1000", "50", "NEW", "newlyListed");
-        if(EbayCreds.isRunningSlow1) return;
-        EbayCreds.isRunningSlow1 = true;
-        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Slow 1 " + ebayReqBody.keyword, 50, 1);
-        EbayCreds.isRunningSlow1 = false;
+    public EbayStatus searchEbaySlow1(@RequestBody EbayReqBody ebayReqBody) {
+        return Ebay.searchEbay(ebayReqBody, "../ebay-config.yaml", javaMailSender, "Slow 1 " + ebayReqBody.keyword, 50, 1);
     }
-
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/slow2")
-    public void searchEbaySlow2(@RequestBody EbayReqBody ebayReqBody) {
-        if(EbayCreds.isRunningSlow2) return;
-        EbayCreds.isRunningSlow2 = true;
-        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Slow 2 " + ebayReqBody.keyword, 50, 2);
-        EbayCreds.isRunningSlow2 = false;
+    public EbayStatus searchEbaySlow2(@RequestBody EbayReqBody ebayReqBody) {
+        return Ebay.searchEbay(ebayReqBody, "../ebay-config.yaml", javaMailSender, "Slow 2 " + ebayReqBody.keyword, 50, 2);
     }
-
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/fast1")
-    public void searchEbayFast1(@RequestBody EbayReqBody ebayReqBody) {
-        if(EbayCreds.isRunningFast1) return;
-        EbayCreds.isRunningFast1 = true;
-        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Fast 1 " + ebayReqBody.keyword, 25, 1);
-        EbayCreds.isRunningFast1 = false;
+    public EbayStatus searchEbayFast1(@RequestBody EbayReqBody ebayReqBody) {
+        return Ebay.searchEbay(ebayReqBody, "../ebay-config.yaml", javaMailSender, "Fast 1 " + ebayReqBody.keyword, 25, 1);
+    }
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PostMapping("/fast2")
+    public EbayStatus searchEbayFast2(@RequestBody EbayReqBody ebayReqBody) {
+        return Ebay.searchEbay(ebayReqBody, "../ebay-config.yaml", javaMailSender, "Fast 2 " + ebayReqBody.keyword, 25, 2);
     }
 
-    @PostMapping("/fast2")
-    public void searchEbayFast2(@RequestBody EbayReqBody ebayReqBody) {
-        if(EbayCreds.isRunningFast2) return;
-        EbayCreds.isRunningFast2 = true;
-        Ebay.ebayUtil(ebayReqBody, javaMailSender, "Fast 2 " + ebayReqBody.keyword, 25, 2);
-        EbayCreds.isRunningFast2 = false;
-    }
 }

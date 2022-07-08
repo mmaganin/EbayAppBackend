@@ -10,7 +10,7 @@ public class EbayReqBody {
     public String lowPrice;
     public String highPrice;
     public String numberOfResults;
-    public String condition;
     public String sortType;
-    public String credsPath;
+    public String conditions;
+    public String buyingOptions;
 }

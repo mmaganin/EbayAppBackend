@@ -6,8 +6,8 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 function App() {
   return (
     <>
-      <div class="set-footer-height">
-        <Header />
+    {/* //   <div class="set-footer-height"> */}
+        {/* <Header /> */}
         <Ebay />
         {/* <Router>
           <Header />
@@ -15,8 +15,8 @@ function App() {
             <Route exact path="/" element={<Ebay />} />
           </Routes>
         </Router> */}
-      </div>
-      <Footer />
+      {/* // </div>
+      // <Footer /> */}
     </>
   );
 }
