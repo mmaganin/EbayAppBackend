@@ -1,6 +1,4 @@
-package com.maganini.portfolio.Apis.ApiUtilClasses;
-
-import org.springframework.web.bind.annotation.GetMapping;
+package com.maganini.ebayapp.Api.ApiUtilClasses;
 
 import java.util.ArrayList;
 

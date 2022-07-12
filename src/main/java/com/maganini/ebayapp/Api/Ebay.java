@@ -1,11 +1,11 @@
-package com.maganini.portfolio.Apis;
+package com.maganini.ebayapp.Api;
 
 import com.ebay.api.client.auth.oauth2.CredentialUtil;
 import com.ebay.api.client.auth.oauth2.OAuth2Api;
 import com.ebay.api.client.auth.oauth2.model.AccessToken;
 import com.ebay.api.client.auth.oauth2.model.Environment;
 import com.ebay.api.client.auth.oauth2.model.OAuthResponse;
-import com.maganini.portfolio.Apis.ApiUtilClasses.*;
+import com.maganini.ebayapp.Api.ApiUtilClasses.*;
 import lombok.Data;
 
 import java.io.FileInputStream;

@@ -1,4 +1,4 @@
-package com.maganini.portfolio.Apis.ApiUtilClasses;
+package com.maganini.ebayapp.Api.ApiUtilClasses;
 
 import lombok.Data;
 

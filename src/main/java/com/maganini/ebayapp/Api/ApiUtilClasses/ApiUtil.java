@@ -1,4 +1,4 @@
-package com.maganini.portfolio.Apis.ApiUtilClasses;
+package com.maganini.ebayapp.Api.ApiUtilClasses;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

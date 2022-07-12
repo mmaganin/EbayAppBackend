@@ -1,9 +1,9 @@
-package com.maganini.portfolio.Controller;
+package com.maganini.ebayapp.Controller;
 
-import com.maganini.portfolio.Apis.ApiUtilClasses.EbayCreds;
-import com.maganini.portfolio.Apis.ApiUtilClasses.EbayReqBody;
-import com.maganini.portfolio.Apis.ApiUtilClasses.EbayStatus;
-import com.maganini.portfolio.Apis.Ebay;
+import com.maganini.ebayapp.Api.ApiUtilClasses.EbayCreds;
+import com.maganini.ebayapp.Api.ApiUtilClasses.EbayReqBody;
+import com.maganini.ebayapp.Api.ApiUtilClasses.EbayStatus;
+import com.maganini.ebayapp.Api.Ebay;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.*;
