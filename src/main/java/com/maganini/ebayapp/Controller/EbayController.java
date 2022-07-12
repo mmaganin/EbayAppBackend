@@ -48,22 +48,25 @@ public class EbayController {
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/slow1")
     public EbayStatus searchEbaySlow1(@RequestBody EbayReqBody ebayReqBody) {
-        return Ebay.searchEbay(ebayReqBody, "../ebay-config.yaml", javaMailSender, "Slow 1 " + ebayReqBody.keyword, 50, 1);
+//        return Ebay.searchEbay(ebayReqBody, "../ebay-config.yaml", javaMailSender, "Slow 1 " + ebayReqBody.keyword, 50, 1);
+        return Ebay.searchEbay(ebayReqBody, Ebay.credsPath, javaMailSender, "Slow 1 " + ebayReqBody.keyword, 50, 1);
+
     }
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/slow2")
     public EbayStatus searchEbaySlow2(@RequestBody EbayReqBody ebayReqBody) {
-        return Ebay.searchEbay(ebayReqBody, "../ebay-config.yaml", javaMailSender, "Slow 2 " + ebayReqBody.keyword, 50, 2);
+        return Ebay.searchEbay(ebayReqBody, Ebay.credsPath, javaMailSender, "Slow 2 " + ebayReqBody.keyword, 50, 2);
     }
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/fast1")
     public EbayStatus searchEbayFast1(@RequestBody EbayReqBody ebayReqBody) {
-        return Ebay.searchEbay(ebayReqBody, "../ebay-config.yaml", javaMailSender, "Fast 1 " + ebayReqBody.keyword, 25, 1);
+        return Ebay.searchEbay(ebayReqBody, Ebay.credsPath, javaMailSender, "Fast 1 " + ebayReqBody.keyword, 25, 1);
+
     }
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/fast2")
     public EbayStatus searchEbayFast2(@RequestBody EbayReqBody ebayReqBody) {
-        return Ebay.searchEbay(ebayReqBody, "../ebay-config.yaml", javaMailSender, "Fast 2 " + ebayReqBody.keyword, 25, 2);
+        return Ebay.searchEbay(ebayReqBody, Ebay.credsPath, javaMailSender, "Fast 2 " + ebayReqBody.keyword, 25, 2);
     }
 
 }

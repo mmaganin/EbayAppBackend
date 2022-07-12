@@ -28,6 +28,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 
 @Data
 public class Ebay {
+    public static final String credsPath = "C:\\Users\\micha\\OneDrive\\Desktop\\javaPortfolioProj\\ebay-config.yaml";
+
     //fields for mapping JSON response to POJO
     public AutoCorrections autoCorrections;
     public String href;
