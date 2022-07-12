@@ -1,5 +1,6 @@
 package com.maganini.ebayapp;
 
+import com.maganini.ebayapp.Api.Ebay;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

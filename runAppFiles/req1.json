@@ -1,0 +1,10 @@
+{
+    "keyword": "airpods pro",
+    "lowPrice": "35",
+    "highPrice": "130",
+    "expectedSellPrice": "160",
+    "numberOfResults": "100",
+    "conditions": "NEW",
+    "sortType": "newlyListed",
+    "buyingOptions": "FIXED_PRICE|BEST_OFFER"
+}

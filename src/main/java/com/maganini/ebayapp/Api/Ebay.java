@@ -16,6 +16,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -28,7 +30,16 @@ import org.springframework.mail.javamail.JavaMailSender;
 
 @Data
 public class Ebay {
-    public static final String credsPath = "C:\\Users\\micha\\OneDrive\\Desktop\\javaPortfolioProj\\ebay-config.yaml";
+    public static final String credsPath;
+    static{
+        //path for running JAR file located in target folder
+        //wont work running in intellij, must use single getParent call
+        credsPath = Paths.get("").toAbsolutePath().getParent().getParent() + "\\ebay-config.yaml";
+    }
+
+    public static void main(String[] args) {
+        System.out.println(credsPath);
+    }
 
     //fields for mapping JSON response to POJO
     public AutoCorrections autoCorrections;
