@@ -54,7 +54,9 @@ public class Ebay {
             accessToken = getAccessToken(option);
         }
         String numResults = ebayReqBody.numberOfResults;
-        try {Integer.parseInt(ebayReqBody.numberOfResults);} catch (Exception e) {
+        try {
+            Integer.parseInt(ebayReqBody.numberOfResults);
+        } catch (Exception e) {
             numResults = "50";
         }
 
@@ -64,7 +66,7 @@ public class Ebay {
                 "&filter=" + URLEncoder.encode("deliveryCountry:US,buyingOptions:{" + ebayReqBody.buyingOptions + "},conditions:{" + ebayReqBody.conditions + "}", Charset.defaultCharset());
 
         //input nothing for searching for Best Match
-        if(ebayReqBody.sortType != null && !ebayReqBody.sortType.equals("")){
+        if (ebayReqBody.sortType != null && !ebayReqBody.sortType.equals("")) {
             uri += "&sort=" + ebayReqBody.sortType;
         }
 
@@ -97,8 +99,11 @@ public class Ebay {
                 checkedListings.add(ebayItem);
                 System.out.println();
                 System.out.println("!!!ITEM NOT YET CHECKED BELOW!!!");
-                System.out.println("Title: " + ebayItem.title + ", Price: " + ebayItem.price + ", Condition: "
-                        + ebayItem.condition + ", Listing Creation Date: " + ebayItem.itemCreationDate + ", URL: " + ebayItem.itemWebUrl);
+                System.out.println("Title: " + ebayItem.title + ", Price: " +
+                        (ebayItem.price != null
+                                ? ("$" + ebayItem.price.value)
+                                : "NULL")
+                        + ", Condition: " + ebayItem.condition + ", Listing Creation Date: " + ebayItem.itemCreationDate + ", URL: " + ebayItem.itemWebUrl);
             }
         }
 
@@ -112,6 +117,7 @@ public class Ebay {
                         ", \nPrice: " + (ebayItem.price != null
                         ? ("$" + ebayItem.price.value)
                         : "No price data (Best Offer or Auction item)") +
+                        ", \nExpected Selling Price: " + ebayReqBody.expectedSellPrice +
                         "\n" + ebayItem.itemWebUrl + "\n\n";
             }
             sendEmail(javaMailSender, "michaelmags33@gmail.com", "!!EBAY!! New Potential Buy(s)", body);
@@ -120,20 +126,26 @@ public class Ebay {
         return ApiUtil.mapStrResponseToMap(ebayResponse);
     }
 
-    public static boolean checkCanAddItem(EbayReqBody ebayReqBody, EbayItemSummary ebayItem){
+    public static boolean checkCanAddItem(EbayReqBody ebayReqBody, EbayItemSummary ebayItem) {
         double lowPrice;
         double highPrice;
         double itemValue;
         boolean canAddItem = true;
 
         //parses listing item's USD value, and high and low USD price search filter values
-        try {lowPrice = Double.parseDouble(ebayReqBody.lowPrice);} catch (Exception e) {
+        try {
+            lowPrice = Double.parseDouble(ebayReqBody.lowPrice);
+        } catch (Exception e) {
             lowPrice = 0.0;
         }
-        try {highPrice = Double.parseDouble(ebayReqBody.highPrice);} catch (Exception e) {
+        try {
+            highPrice = Double.parseDouble(ebayReqBody.highPrice);
+        } catch (Exception e) {
             highPrice = 0.0;
         }
-        try {itemValue = Double.parseDouble(ebayItem.price.value);} catch (Exception e) {
+        try {
+            itemValue = Double.parseDouble(ebayItem.price.value);
+        } catch (Exception e) {
             itemValue = lowPrice;
         }
         //if valid filter prices are entered, allows add item if item's value in range
@@ -143,9 +155,9 @@ public class Ebay {
             }
         }
         //if sorting by newly listed items, allows add item if item listed today
-        if(ebayReqBody.sortType.equals("newlyListed")){
-            if(ebayItem.itemCreationDate == null
-                    || ebayItem.itemCreationDate.toString().equals(Date.valueOf(LocalDate.now()).toString())){
+        if (ebayReqBody.sortType.equals("newlyListed")) {
+            if (ebayItem.itemCreationDate == null
+                    || ebayItem.itemCreationDate.toString().equals(Date.valueOf(LocalDate.now()).toString())) {
             } else {
                 canAddItem = false;
             }
@@ -252,12 +264,14 @@ public class Ebay {
             Ebay.initEbay(ebayReqBody, credsPath, secsBetweenCalls, option);
             System.out.println();
             System.out.println(initCallName);
+            System.out.println("Expected Sell Price: " + ebayReqBody.expectedSellPrice);
             System.out.println();
             TimeUnit.SECONDS.sleep(secsBetweenCalls);
             while (!getCanRun(secsBetweenCalls, option)) {
 //                System.out.println(Ebay.getEbay(ebayReqBody, javaMailSender, option));
                 Ebay.getEbay(ebayReqBody, credsPath, javaMailSender, secsBetweenCalls, option);
                 System.out.println(callName + i);
+                System.out.println("Expected Sell Price: " + ebayReqBody.expectedSellPrice);
                 System.out.println();
                 i++;
                 TimeUnit.SECONDS.sleep(secsBetweenCalls);

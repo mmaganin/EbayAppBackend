@@ -9,6 +9,7 @@ public class EbayReqBody {
     public String keyword;
     public String lowPrice;
     public String highPrice;
+    public String expectedSellPrice;
     public String numberOfResults;
     public String sortType;
     public String conditions;
