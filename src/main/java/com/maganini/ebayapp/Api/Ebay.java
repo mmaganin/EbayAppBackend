@@ -20,6 +20,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -209,6 +211,7 @@ public class Ebay {
         message.setTo(toEmail);
         message.setSubject(subject);
         message.setText(body);
+        System.out.println("In send email method... To test when execution finished but no email");
         javaMailSender.send(message);
         System.out.println("Mail Sent Successfully");
     }
@@ -267,22 +270,29 @@ public class Ebay {
 
     public static void ebayUtil(EbayReqBody ebayReqBody, String credsPath, JavaMailSender javaMailSender, String logMessage, int secsBetweenCalls, int option) {
         String emailBody = "defaultBody";
-        String initCallName = "END OF INIT API CALL FOR " + logMessage;
-        String callName = "END OF API CALL FOR " + logMessage + " #";
+        String initCallName = "END OF INIT API CALL... " + logMessage + " #0";
+        String callName = "END OF API CALL... " + logMessage + " #";
+        LocalDateTime nowTime = LocalDateTime.now();
+        String currTime = nowTime.format(DateTimeFormatter.ISO_LOCAL_TIME);
+        String dateTimeStarted = "Started on " + nowTime.format(DateTimeFormatter.ISO_LOCAL_DATE) + " at " + currTime.substring(0, currTime.indexOf('.')) + " CST";
 
         try {
             int i = 1;
+            int secondsElapsed;
             Ebay.initEbay(ebayReqBody, credsPath, secsBetweenCalls, option);
             System.out.println();
             System.out.println(initCallName);
-            System.out.println("Expected Sell Price: " + ebayReqBody.expectedSellPrice);
             System.out.println();
             TimeUnit.SECONDS.sleep(secsBetweenCalls);
             while (!getCanRun(secsBetweenCalls, option)) {
 //                System.out.println(Ebay.getEbay(ebayReqBody, javaMailSender, option));
+                secondsElapsed = i * secsBetweenCalls;
                 Ebay.getEbay(ebayReqBody, credsPath, javaMailSender, secsBetweenCalls, option);
                 System.out.println(callName + i);
                 System.out.println("Expected Sell Price: " + ebayReqBody.expectedSellPrice);
+                System.out.println("Time elapsed... " + calculateTime(secondsElapsed));
+//                System.out.printf("Time elapsed... Seconds: %d, OR Minutes: %.2f, OR Hours: %.2f%n", secondsElapsed, secondsElapsed / 60.0, secondsElapsed / 60.0 / 60.0);
+                System.out.println(dateTimeStarted);
                 System.out.println();
                 i++;
                 TimeUnit.SECONDS.sleep(secsBetweenCalls);
@@ -294,6 +304,15 @@ public class Ebay {
         Ebay.clearCheckedListings(secsBetweenCalls, option);
         System.out.println("EXECUTION FINISHED");
         Ebay.sendEmail(javaMailSender, "michaelmags33@gmail.com", "Ebay Execution stopped", "\"" + credsPath + "\" path stopped: " + emailBody);
+    }
+
+    public static String calculateTime(int seconds) {
+        int days = (int) TimeUnit.SECONDS.toDays(seconds);
+        long hours = TimeUnit.SECONDS.toHours(seconds) - (days * 24L);
+        long minutes = TimeUnit.SECONDS.toMinutes(seconds) - (hours * 60);
+        long secondsRemaining = TimeUnit.SECONDS.toSeconds(seconds) - (TimeUnit.SECONDS.toMinutes(seconds) * 60);
+
+        return "Days: " + days + ", Hours: " + hours + ", Minutes: " + minutes + ", Seconds: " + secondsRemaining;
     }
 
     public static void clearCheckedListings(int secsBetweenCalls, int option) {

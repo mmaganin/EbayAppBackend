@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/ebay")
@@ -16,7 +19,7 @@ public class EbayController {
 
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/status")
-    public EbayStatus isRunningSlow1() {
+    public EbayStatus checkStatus() {
         return EbayStatus.getEbayStatus();
     }
 
@@ -49,24 +52,24 @@ public class EbayController {
     @PostMapping("/slow1")
     public EbayStatus searchEbaySlow1(@RequestBody EbayReqBody ebayReqBody) {
 //        return Ebay.searchEbay(ebayReqBody, "../ebay-config.yaml", javaMailSender, "Slow 1 " + ebayReqBody.keyword, 50, 1);
-        return Ebay.searchEbay(ebayReqBody, Ebay.credsPath, javaMailSender, "Slow 1 " + ebayReqBody.keyword, 50, 1);
+        return Ebay.searchEbay(ebayReqBody, Ebay.credsPath, javaMailSender, "Thread: Slow 1, Keyword: " + ebayReqBody.keyword + ", Call", 50, 1);
 
     }
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/slow2")
     public EbayStatus searchEbaySlow2(@RequestBody EbayReqBody ebayReqBody) {
-        return Ebay.searchEbay(ebayReqBody, Ebay.credsPath, javaMailSender, "Slow 2 " + ebayReqBody.keyword, 50, 2);
+        return Ebay.searchEbay(ebayReqBody, Ebay.credsPath, javaMailSender, "Thread: Slow 2, Keyword: " + ebayReqBody.keyword + ", Call", 50, 2);
     }
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/fast1")
     public EbayStatus searchEbayFast1(@RequestBody EbayReqBody ebayReqBody) {
-        return Ebay.searchEbay(ebayReqBody, Ebay.credsPath, javaMailSender, "Fast 1 " + ebayReqBody.keyword, 25, 1);
+        return Ebay.searchEbay(ebayReqBody, Ebay.credsPath, javaMailSender, "Thread: Fast 1, Keyword: " + ebayReqBody.keyword + ", Call", 25, 1);
 
     }
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/fast2")
     public EbayStatus searchEbayFast2(@RequestBody EbayReqBody ebayReqBody) {
-        return Ebay.searchEbay(ebayReqBody, Ebay.credsPath, javaMailSender, "Fast 2 " + ebayReqBody.keyword, 25, 2);
+        return Ebay.searchEbay(ebayReqBody, Ebay.credsPath, javaMailSender, "Thread: Fast 2, Keyword: " + ebayReqBody.keyword + ", Call", 25, 2);
     }
 
 }
