@@ -1,8 +1,8 @@
 {
-    "keyword": "rtx 3090",
-    "lowPrice": "450",
-    "highPrice": "1100",
-    "expectedSellPrice": "1500",
+    "keyword": "rtx 3080",
+    "lowPrice": "205",
+    "highPrice": "605",
+    "expectedSellPrice": "900",
     "numberOfResults": "50",
     "conditions": "NEW",
     "sortType": "newlyListed",
